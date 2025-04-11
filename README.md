@@ -1,69 +1,38 @@
 # 家庭相册网站
 
-一个温馨的家庭相册网站，用于记录和分享家庭的美好时刻。
+这是一个简单的家庭相册网站，用于存储和分享家庭照片。
 
 ## 功能特点
 
-- 📸 照片管理：上传、整理和分享家庭照片
-- 👨‍👩‍👧‍👦 成员信息：记录家庭成员的基本信息和照片
-- 📅 日历记事：记录重要日期和事件
-- 🎨 现代化界面：响应式设计，支持各种设备
-- 🔒 安全可靠：本地存储，保护隐私
-
-## 项目结构
-
-```
-family-album/
-├── index.html          # 首页
-├── photos.html         # 照片页面
-├── members.html        # 成员信息页面
-├── calendar.html       # 日历记事页面
-├── upload.html         # 照片上传页面
-├── css/               # 样式文件
-│   └── style.css      # 主样式文件
-├── js/                # JavaScript文件
-│   └── data.js        # 数据管理
-└── images/            # 图片资源
-```
+- 照片上传和管理
+- 家庭成员管理
+- 日历功能，记录重要日期
+- 用户认证和权限管理
 
 ## 技术栈
 
 - HTML5
 - CSS3
 - JavaScript (ES6+)
-- Font Awesome 图标
-- 响应式设计
+- LocalStorage 数据存储
 
-## 本地运行
+## 如何在本地运行
 
-1. 克隆仓库：
-```bash
-git clone [repository-url]
-cd family-album
-```
+1. 克隆仓库到本地
+2. 使用浏览器打开 `index.html` 文件
 
-2. 使用本地服务器运行（例如使用 Python）：
-```bash
-# Python 3
-python -m http.server 8000
+## 如何在 GitHub Pages 上部署
 
-# Python 2
-python -m SimpleHTTPServer 8000
-```
+1. 在 GitHub 仓库设置中启用 GitHub Pages
+2. 选择 `main` 分支作为源
+3. 选择根目录 `/(root)` 作为部署目录
+4. 保存设置，等待几分钟后网站就会部署完成
 
-3. 在浏览器中访问：
-```
-http://localhost:8000
-```
+## 注意事项
 
-## 贡献指南
-
-1. Fork 项目
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
+- 所有数据都存储在浏览器的 LocalStorage 中，清除浏览器数据会导致数据丢失
+- 为了更好的体验，建议使用现代浏览器（Chrome、Firefox、Edge 等）
 
 ## 许可证
 
-MIT License - 详见 LICENSE 文件 
+MIT 
