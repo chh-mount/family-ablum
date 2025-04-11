@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家庭成员 - 家庭相册</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .members-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .members-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .members-title {
+            font-size: 2rem;
+            color: var(--text-color);
+            margin: 0;
+        }
+
+        .members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .member-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .member-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .member-avatar {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .member-info {
+            padding: 20px;
+        }
+
+        .member-name {
+            font-size: 1.5rem;
+            color: var(--text-color);
+            margin: 0 0 10px 0;
+        }
+
+        .member-role {
+            color: var(--primary-color);
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .member-description {
+            color: var(--text-color);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .member-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .member-action-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .member-action-btn.edit {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .member-action-btn.delete {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .member-action-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* 添加成员按钮样式 */
+        .add-member-btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .add-member-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 50px auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--text-color);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .modal-btn.cancel {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .modal-btn.save {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .modal-btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="nav-container">
+        <div class="nav-content">
+            <a href="index.html" class="nav-logo">
+                <img src="images/logo.svg" alt="家庭相册" onerror="this.src='images/logo.png'">
+                家庭相册
+            </a>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="photos.html" class="nav-link">相册</a>
+                <a href="members.html" class="nav-link">成员</a>
+                <a href="calendar.html" class="nav-link">日历</a>
+                <a href="upload.html" class="nav-link">上传</a>
+                <a href="login.html" class="nav-link" id="loginLink">登录</a>
+                <a href="#" class="nav-link" id="logoutLink" style="display: none;">退出</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="members-container">
+        <div class="members-header">
+            <h1 class="members-title">家庭成员</h1>
+            <button class="add-member-btn" onclick="openAddMemberModal()">
+                <i class="fas fa-plus"></i> 添加成员
+            </button>
+        </div>
+
+        <div class="members-grid" id="membersGrid">
+            <!-- 成员卡片将通过 JavaScript 动态加载 -->
+        </div>
+    </div>
+
+    <!-- 添加/编辑成员的模态框 -->
+    <div id="memberModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeMemberModal()">&times;</span>
+            <h2 class="modal-title" id="modalTitle">添加家庭成员</h2>
+            <form id="memberForm">
+                <input type="hidden" id="memberId">
+                <div class="form-group">
+                    <label for="memberName">姓名</label>
+                    <input type="text" id="memberName" required>
+                </div>
+                <div class="form-group">
+                    <label for="memberRole">角色</label>
+                    <input type="text" id="memberRole" required>
+                </div>
+                <div class="form-group">
+                    <label for="memberBirthday">生日</label>
+                    <input type="date" id="memberBirthday" required>
+                </div>
+                <div class="form-group">
+                    <label for="memberDescription">描述</label>
+                    <textarea id="memberDescription" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="memberAvatar">头像</label>
+                    <input type="file" id="memberAvatar" accept="image/*">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn cancel" onclick="closeMemberModal()">取消</button>
+                    <button type="submit" class="modal-btn save">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/nav.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const membersGrid = document.getElementById('membersGrid');
+            const memberModal = document.getElementById('memberModal');
+            const memberForm = document.getElementById('memberForm');
+            const modalTitle = document.getElementById('modalTitle');
+
+            // 加载成员数据
+            function loadMembers() {
+                const members = DataStore.getMembers();
+                const isLoggedIn = AuthManager.isLoggedIn();
+                
+                membersGrid.innerHTML = members.map(member => `
+                    <div class="member-card">
+                        <img src="${member.avatar || 'images/default-avatar.jpg'}" alt="${member.name}" class="member-avatar">
+                        <div class="member-info">
+                            <h3 class="member-name">${member.name}</h3>
+                            <div class="member-role">${member.role}</div>
+                            <div class="member-description">${member.description}</div>
+                            ${isLoggedIn ? `
+                            <div class="member-actions">
+                                <button class="member-action-btn edit" onclick="editMember('${member.id}')">
+                                    <i class="fas fa-edit"></i> 编辑
+                                </button>
+                                <button class="member-action-btn delete" onclick="deleteMember('${member.id}')">
+                                    <i class="fas fa-trash"></i> 删除
+                                </button>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // 打开添加成员模态框
+            window.openAddMemberModal = function() {
+                if (!AuthManager.isLoggedIn()) {
+                    alert('请先登录后再添加成员');
+                    return;
+                }
+                modalTitle.textContent = '添加家庭成员';
+                memberForm.reset();
+                document.getElementById('memberId').value = '';
+                memberModal.style.display = 'block';
+            };
+
+            // 打开编辑成员模态框
+            window.editMember = function(id) {
+                if (!AuthManager.isLoggedIn()) {
+                    alert('请先登录后再编辑成员');
+                    return;
+                }
+                const member = DataStore.getMember(id);
+                if (member) {
+                    modalTitle.textContent = '编辑家庭成员';
+                    document.getElementById('memberId').value = member.id;
+                    document.getElementById('memberName').value = member.name;
+                    document.getElementById('memberRole').value = member.role;
+                    document.getElementById('memberBirthday').value = member.birthday;
+                    document.getElementById('memberDescription').value = member.description;
+                    memberModal.style.display = 'block';
+                }
+            };
+
+            // 关闭模态框
+            window.closeMemberModal = function() {
+                memberModal.style.display = 'none';
+            };
+
+            // 删除成员
+            window.deleteMember = async function(id) {
+                if (!AuthManager.isLoggedIn()) {
+                    alert('请先登录后再删除成员');
+                    return;
+                }
+                if (confirm('确定要删除这个成员吗？')) {
+                    try {
+                        const success = await DataStore.deleteMember(id);
+                        if (success) {
+                            loadMembers();
+                        } else {
+                            alert('删除成员失败');
+                        }
+                    } catch (error) {
+                        console.error('删除成员失败:', error);
+                        alert('删除成员失败，请重试');
+                    }
+                }
+            };
+
+            // 处理表单提交
+            memberForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                if (!AuthManager.isLoggedIn()) {
+                    alert('请先登录后再保存成员信息');
+                    return;
+                }
+
+                const memberId = document.getElementById('memberId').value;
+                const memberData = {
+                    name: document.getElementById('memberName').value,
+                    role: document.getElementById('memberRole').value,
+                    birthday: document.getElementById('memberBirthday').value,
+                    description: document.getElementById('memberDescription').value
+                };
+
+                try {
+                    let success;
+                    if (memberId) {
+                        // 编辑现有成员
+                        success = await DataStore.updateMember({ ...memberData, id: memberId });
+                    } else {
+                        // 添加新成员
+                        success = await DataStore.addMember(memberData);
+                    }
+
+                    if (success) {
+                        closeMemberModal();
+                        loadMembers();
+                    } else {
+                        alert('保存成员信息失败');
+                    }
+                } catch (error) {
+                    console.error('保存成员信息失败:', error);
+                    alert('保存成员信息失败，请重试');
+                }
+            });
+
+            // 点击模态框外部关闭
+            window.onclick = function(event) {
+                if (event.target === memberModal) {
+                    closeMemberModal();
+                }
+            };
+
+            // 初始加载成员数据
+            loadMembers();
+        });
+    </script>
+</body>
+</html> 

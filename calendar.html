@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日历记事 - 家庭相册</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .calendar-container {
+            max-width: 1200px;
+            margin: 80px auto 20px;
+            padding: 20px;
+        }
+
+        .calendar-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .calendar-title {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .calendar-subtitle {
+            color: #666;
+        }
+
+        .calendar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .calendar-nav-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-nav-btn:hover {
+            background: rgba(74, 144, 226, 0.1);
+        }
+
+        .calendar-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .calendar-add-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .calendar-add-btn:hover {
+            background: var(--primary-color-dark);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .calendar-weekday {
+            background: #f8f9fa;
+            padding: 10px;
+            text-align: center;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .calendar-day {
+            background: white;
+            min-height: 120px;
+            padding: 10px;
+            position: relative;
+            transition: background 0.3s ease;
+        }
+
+        .calendar-day:hover {
+            background: #f8f9fa;
+        }
+
+        .calendar-day.today {
+            background: rgba(74, 144, 226, 0.05);
+        }
+
+        .calendar-day.other-month {
+            background: #f8f9fa;
+            color: #999;
+        }
+
+        .day-number {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .day-events {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .day-event {
+            font-size: 0.8rem;
+            padding: 2px 5px;
+            border-radius: 3px;
+            background: var(--primary-color);
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .day-event:hover {
+            background: var(--primary-color-dark);
+        }
+
+        .day-event.more {
+            background: #6c757d;
+            text-align: center;
+        }
+
+        .day-event.more:hover {
+            background: #5a6268;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-color-dark);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        @media (max-width: 768px) {
+            .calendar-container {
+                padding: 10px;
+                margin-top: 60px;
+            }
+
+            .calendar-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .calendar-nav {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .calendar-add-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .calendar-day {
+                min-height: 100px;
+                padding: 5px;
+            }
+
+            .day-event {
+                font-size: 0.7rem;
+                padding: 1px 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="nav-container">
+        <div class="nav-content">
+            <a href="index.html" class="nav-logo">
+                <img src="images/logo.svg" alt="家庭相册" onerror="this.src='images/logo.png'">
+                家庭相册
+            </a>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="photos.html" class="nav-link">相册</a>
+                <a href="members.html" class="nav-link">成员</a>
+                <a href="calendar.html" class="nav-link active">日历</a>
+                <a href="upload.html" class="nav-link">上传</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <h1 class="calendar-title">日历记事</h1>
+            <p class="calendar-subtitle">记录重要日期和事件</p>
+        </div>
+
+        <div class="calendar-controls">
+            <div class="calendar-nav">
+                <button class="calendar-nav-btn" onclick="calendar.prevMonth()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h2 class="calendar-title" id="currentMonth">2024年4月</h2>
+                <button class="calendar-nav-btn" onclick="calendar.nextMonth()">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <button class="calendar-add-btn" onclick="calendar.showAddEventModal()">
+                <i class="fas fa-plus"></i> 添加事件
+            </button>
+        </div>
+
+        <div class="calendar-grid" id="calendarGrid">
+            <!-- 日历将通过 JavaScript 动态生成 -->
+        </div>
+    </div>
+
+    <!-- 添加/编辑事件模态框 -->
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">添加事件</div>
+                <button class="modal-close" onclick="calendar.closeEventModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="eventForm">
+                    <div class="form-group">
+                        <label for="eventTitle">事件标题</label>
+                        <input type="text" id="eventTitle" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventDate">日期</label>
+                        <input type="date" id="eventDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventDescription">描述</label>
+                        <textarea id="eventDescription" class="form-control" rows="3"></textarea>
+                    </div>
+                    <input type="hidden" id="eventId">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="calendar.closeEventModal()">取消</button>
+                <button class="btn btn-danger" id="deleteEventBtn" onclick="calendar.deleteEvent()" style="display: none;">删除</button>
+                <button class="btn btn-primary" onclick="calendar.saveEvent()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/nav.js"></script>
+    <script>
+        class Calendar {
+            constructor() {
+                this.currentDate = new Date();
+                this.events = [];
+                this.editingEventId = null;
+                this.init();
+            }
+
+            init() {
+                this.loadEvents();
+                this.renderCalendar();
+            }
+
+            loadEvents() {
+                this.events = DataStore.getContents()
+                    .filter(content => content.contentType === '事件')
+                    .map(event => ({
+                        ...event,
+                        date: new Date(event.date)
+                    }));
+            }
+
+            renderCalendar() {
+                const year = this.currentDate.getFullYear();
+                const month = this.currentDate.getMonth();
+
+                // 更新月份标题
+                document.getElementById('currentMonth').textContent = 
+                    `${year}年${month + 1}月`;
+
+                // 获取当月第一天是星期几
+                const firstDay = new Date(year, month, 1).getDay();
+                // 获取当月天数
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                // 获取上月天数
+                const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+                const grid = document.getElementById('calendarGrid');
+                grid.innerHTML = '';
+
+                // 添加星期标题
+                const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+                weekdays.forEach(day => {
+                    const weekday = document.createElement('div');
+                    weekday.className = 'calendar-weekday';
+                    weekday.textContent = day;
+                    grid.appendChild(weekday);
+                });
+
+                // 添加上月剩余日期
+                for (let i = firstDay - 1; i >= 0; i--) {
+                    const day = document.createElement('div');
+                    day.className = 'calendar-day other-month';
+                    day.innerHTML = `
+                        <div class="day-number">${daysInPrevMonth - i}</div>
+                    `;
+                    grid.appendChild(day);
+                }
+
+                // 添加当月日期
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const day = document.createElement('div');
+                    const date = new Date(year, month, i);
+                    const isToday = this.isToday(date);
+                    const dayEvents = this.getEventsForDate(date);
+
+                    day.className = `calendar-day${isToday ? ' today' : ''}`;
+                    day.innerHTML = `
+                        <div class="day-number">${i}</div>
+                        <div class="day-events">
+                            ${this.renderDayEvents(dayEvents)}
+                        </div>
+                    `;
+
+                    // 添加点击事件
+                    day.addEventListener('click', () => {
+                        this.showAddEventModal(date);
+                    });
+
+                    grid.appendChild(day);
+                }
+
+                // 添加下月开始日期
+                const remainingDays = 42 - (firstDay + daysInMonth);
+                for (let i = 1; i <= remainingDays; i++) {
+                    const day = document.createElement('div');
+                    day.className = 'calendar-day other-month';
+                    day.innerHTML = `
+                        <div class="day-number">${i}</div>
+                    `;
+                    grid.appendChild(day);
+                }
+            }
+
+            renderDayEvents(events) {
+                if (events.length === 0) return '';
+
+                const maxEvents = 3;
+                const displayEvents = events.slice(0, maxEvents);
+                const remainingCount = events.length - maxEvents;
+
+                return `
+                    ${displayEvents.map(event => `
+                        <div class="day-event" onclick="calendar.editEvent('${event.id}')">
+                            ${event.title}
+                        </div>
+                    `).join('')}
+                    ${remainingCount > 0 ? `
+                        <div class="day-event more">
+                            还有 ${remainingCount} 个事件
+                        </div>
+                    ` : ''}
+                `;
+            }
+
+            getEventsForDate(date) {
+                return this.events.filter(event => 
+                    event.date.getFullYear() === date.getFullYear() &&
+                    event.date.getMonth() === date.getMonth() &&
+                    event.date.getDate() === date.getDate()
+                );
+            }
+
+            isToday(date) {
+                const today = new Date();
+                return date.getFullYear() === today.getFullYear() &&
+                    date.getMonth() === today.getMonth() &&
+                    date.getDate() === today.getDate();
+            }
+
+            prevMonth() {
+                this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+                this.renderCalendar();
+            }
+
+            nextMonth() {
+                this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+                this.renderCalendar();
+            }
+
+            showAddEventModal(date = null) {
+                const modal = document.getElementById('eventModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const eventForm = document.getElementById('eventForm');
+                const deleteBtn = document.getElementById('deleteEventBtn');
+                const eventIdInput = document.getElementById('eventId');
+
+                // 重置表单
+                eventForm.reset();
+                eventIdInput.value = '';
+                deleteBtn.style.display = 'none';
+                modalTitle.textContent = '添加事件';
+
+                if (date) {
+                    document.getElementById('eventDate').value = 
+                        date.toISOString().split('T')[0];
+                }
+
+                modal.classList.add('active');
+            }
+
+            closeEventModal() {
+                const modal = document.getElementById('eventModal');
+                modal.classList.remove('active');
+                this.editingEventId = null;
+            }
+
+            editEvent(eventId) {
+                const event = this.events.find(e => e.id === eventId);
+                if (!event) return;
+
+                this.editingEventId = eventId;
+                const modal = document.getElementById('eventModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const deleteBtn = document.getElementById('deleteEventBtn');
+
+                document.getElementById('eventTitle').value = event.title;
+                document.getElementById('eventDate').value = 
+                    event.date.toISOString().split('T')[0];
+                document.getElementById('eventDescription').value = event.description || '';
+                document.getElementById('eventId').value = eventId;
+
+                modalTitle.textContent = '编辑事件';
+                deleteBtn.style.display = 'block';
+                modal.classList.add('active');
+            }
+
+            async saveEvent() {
+                const title = document.getElementById('eventTitle').value;
+                const date = document.getElementById('eventDate').value;
+                const description = document.getElementById('eventDescription').value;
+                const eventId = document.getElementById('eventId').value;
+
+                if (!title || !date) {
+                    alert('请填写必要信息');
+                    return;
+                }
+
+                const eventData = {
+                    title,
+                    date,
+                    description,
+                    contentType: '事件'
+                };
+
+                try {
+                    if (this.editingEventId) {
+                        // 更新事件
+                        eventData.id = this.editingEventId;
+                        await DataStore.updateContent(eventData);
+                    } else {
+                        // 添加新事件
+                        await DataStore.addContent(eventData);
+                    }
+
+                    this.loadEvents();
+                    this.renderCalendar();
+                    this.closeEventModal();
+                } catch (error) {
+                    console.error('保存事件失败:', error);
+                    alert('保存事件失败');
+                }
+            }
+
+            async deleteEvent() {
+                if (!this.editingEventId) return;
+
+                if (!confirm('确定要删除这个事件吗？')) {
+                    return;
+                }
+
+                try {
+                    await DataStore.deleteContent(this.editingEventId);
+                    this.loadEvents();
+                    this.renderCalendar();
+                    this.closeEventModal();
+                } catch (error) {
+                    console.error('删除事件失败:', error);
+                    alert('删除事件失败');
+                }
+            }
+        }
+
+        // 初始化日历
+        const calendar = new Calendar();
+    </script>
+</body>
+</html> 

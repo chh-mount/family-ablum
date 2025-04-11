@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上传 - 家庭相册</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .upload-container {
+            max-width: 800px;
+            margin: 80px auto 20px;
+            padding: 20px;
+        }
+
+        .upload-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .upload-title {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .upload-subtitle {
+            color: #666;
+        }
+
+        .upload-form {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .form-control textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background: rgba(74, 144, 226, 0.05);
+        }
+
+        .upload-area i {
+            font-size: 3rem;
+            color: var(--border-color);
+            margin-bottom: 15px;
+        }
+
+        .upload-area p {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .upload-area small {
+            color: #999;
+        }
+
+        .upload-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .preview-remove:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-color-dark);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .upload-progress {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #f8f9fa;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #666;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .upload-container {
+                padding: 10px;
+                margin-top: 60px;
+            }
+
+            .upload-form {
+                padding: 20px;
+            }
+
+            .upload-area {
+                padding: 20px;
+            }
+
+            .upload-area i {
+                font-size: 2rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="nav-container">
+        <div class="nav-content">
+            <a href="index.html" class="nav-logo">
+                <img src="images/logo.svg" alt="家庭相册" onerror="this.src='images/logo.png'">
+                家庭相册
+            </a>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="photos.html" class="nav-link">相册</a>
+                <a href="members.html" class="nav-link">成员</a>
+                <a href="calendar.html" class="nav-link">日历</a>
+                <a href="upload.html" class="nav-link">上传</a>
+                <a href="login.html" class="nav-link" id="loginLink">登录</a>
+                <a href="#" class="nav-link" id="logoutLink" style="display: none;">退出</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="upload-container">
+        <div class="upload-header">
+            <h1 class="upload-title">上传照片</h1>
+            <p class="upload-subtitle">记录美好时刻，珍藏幸福回忆</p>
+        </div>
+
+        <div id="loginRequired" style="display: none; text-align: center; padding: 30px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+            <h2>请先登录</h2>
+            <p>您需要登录后才能上传照片</p>
+            <a href="login.html" class="btn btn-primary" style="margin-top: 20px;">去登录</a>
+        </div>
+
+        <form class="upload-form" id="uploadForm" style="display: none;">
+            <div class="form-group">
+                <label for="title">标题</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="date">日期</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+            <div class="form-group">
+                <label for="category">分类</label>
+                <select id="category" name="category" required>
+                    <option value="">请选择分类</option>
+                    <option value="生活">生活</option>
+                    <option value="旅行">旅行</option>
+                    <option value="节日">节日</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="description">描述</label>
+                <textarea id="description" name="description" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label>照片</label>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-hint">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>点击或拖拽照片到此处</p>
+                        <p class="upload-limits">支持 JPG、PNG、GIF 格式，单个文件不超过 2MB</p>
+                    </div>
+                    <input type="file" id="fileInput" multiple accept="image/jpeg,image/png,image/gif" style="display: none;">
+                </div>
+                <div class="preview-area" id="previewArea"></div>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="submit-btn">上传</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/nav.js"></script>
+    <script>
+        class UploadManager {
+            constructor() {
+                this.form = document.querySelector('.upload-form');
+                this.fileInput = document.getElementById('fileInput');
+                this.uploadArea = document.getElementById('uploadArea');
+                this.previewArea = document.getElementById('previewArea');
+                this.files = [];
+                
+                this.initializeEventListeners();
+                this.checkLoginStatus();
+            }
+
+            initializeEventListeners() {
+                // 文件选择处理
+                this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+                
+                // 拖放处理
+                this.uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    this.uploadArea.classList.add('dragover');
+                });
+                
+                this.uploadArea.addEventListener('dragleave', () => {
+                    this.uploadArea.classList.remove('dragover');
+                });
+                
+                this.uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    this.uploadArea.classList.remove('dragover');
+                    this.handleFileSelect({ target: { files: e.dataTransfer.files } });
+                });
+                
+                // 点击上传区域触发文件选择
+                this.uploadArea.addEventListener('click', () => this.fileInput.click());
+                
+                // 表单提交处理
+                this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+            }
+
+            async handleFileSelect(event) {
+                const newFiles = Array.from(event.target.files);
+                
+                // 验证文件
+                for (const file of newFiles) {
+                    try {
+                        // 验证文件类型
+                        if (!file.type.match(/^image\/(jpeg|png|gif)$/)) {
+                            throw new Error(`文件 ${file.name} 格式不支持，请使用 JPG、PNG 或 GIF 格式`);
+                        }
+                        
+                        // 验证文件大小
+                        if (file.size > 2 * 1024 * 1024) {
+                            throw new Error(`文件 ${file.name} 大小超过 2MB 限制`);
+                        }
+                        
+                        this.files.push(file);
+                        this.updatePreview();
+                    } catch (error) {
+                        alert(error.message);
+                    }
+                }
+                
+                // 清空文件输入，允许重复选择相同文件
+                this.fileInput.value = '';
+            }
+
+            updatePreview() {
+            checkLoginStatus() {
+                const isLoggedIn = AuthManager.isLoggedIn();
+                const loginRequired = document.getElementById('loginRequired');
+                const uploadForm = document.getElementById('uploadForm');
+                
+                if (isLoggedIn) {
+                    loginRequired.style.display = 'none';
+                    uploadForm.style.display = 'block';
+                } else {
+                    loginRequired.style.display = 'block';
+                    uploadForm.style.display = 'none';
+                }
+            }
+
+            setupEventListeners() {
+                const uploadArea = document.getElementById('uploadArea');
+                const uploadForm = document.getElementById('uploadForm');
+
+                // 拖拽上传
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.borderColor = 'var(--primary-color)';
+                });
+
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.style.borderColor = 'var(--border-color)';
+                });
+
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.borderColor = 'var(--border-color)';
+                    this.handleFiles(e.dataTransfer.files);
+                });
+
+                // 点击上传
+                uploadArea.addEventListener('click', () => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.multiple = true;
+                    input.accept = 'image/*';
+                    input.onchange = (e) => this.handleFiles(e.target.files);
+                    input.click();
+                });
+
+                // 表单提交
+                uploadForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.uploadContent();
+                });
+            }
+
+            setTodayDate() {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('date').value = today;
+            }
+
+            handleFiles(fileList) {
+                const newFiles = Array.from(fileList).filter(file => 
+                    file.type.startsWith('image/')
+                );
+
+                if (this.files.length + newFiles.length > this.maxFiles) {
+                    alert(`最多只能上传 ${this.maxFiles} 张照片`);
+                    return;
+                }
+
+                newFiles.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.files.push({
+                            file,
+                            preview: e.target.result
+                        });
+                        this.updatePreview();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            updatePreview() {
+                const preview = document.getElementById('uploadPreview');
+                preview.innerHTML = this.files.map((file, index) => `
+                    <div class="preview-item">
+                        <img src="${file.preview}" alt="预览图">
+                        <div class="preview-remove" onclick="uploadManager.removeFile(${index})">
+                            <i class="fas fa-times"></i>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            removeFile(index) {
+                this.files.splice(index, 1);
+                this.updatePreview();
+            }
+
+            async uploadContent() {
+                if (this.files.length === 0) {
+                    alert('请至少上传一张照片');
+                    return;
+                }
+
+                const title = document.getElementById('title').value;
+                const date = document.getElementById('date').value;
+                const category = document.getElementById('category').value;
+                const description = document.getElementById('description').value;
+
+                if (!title || !date || !category) {
+                    alert('请填写必要信息');
+                    return;
+                }
+
+                const progress = document.getElementById('uploadProgress');
+                const progressFill = document.getElementById('progressFill');
+                const progressText = document.getElementById('progressText');
+                progress.style.display = 'block';
+
+                try {
+                    // 模拟上传进度
+                    let progress = 0;
+                    const interval = setInterval(() => {
+                        progress += 10;
+                        progressFill.style.width = `${progress}%`;
+                        if (progress >= 100) {
+                            clearInterval(interval);
+                            this.saveContent({
+                                title,
+                                date,
+                                category,
+                                description,
+                                images: this.files.map(f => f.preview)
+                            });
+                        }
+                    }, 200);
+
+                } catch (error) {
+                    console.error('上传失败:', error);
+                    alert('上传失败，请重试');
+                }
+            }
+
+            async saveContent(contentData) {
+                try {
+                    // 检查用户是否已登录
+                    if (!AuthManager.isLoggedIn()) {
+                        alert('请先登录后再上传照片');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    
+                    const content = {
+                        ...contentData,
+                        contentType: '照片',
+                        date: new Date().toISOString()
+                    };
+
+                    await DataStore.addContent(content);
+                    alert('上传成功！');
+                    window.location.href = 'photos.html';
+                } catch (error) {
+                    console.error('保存失败:', error);
+                    alert('保存失败，请重试');
+                }
+            }
+        }
+
+        // 初始化上传管理器
+        const uploadManager = new UploadManager();
+    </script>
+</body>
+</html> 

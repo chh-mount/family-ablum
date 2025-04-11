@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>相册 - 家庭相册</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .photos-container {
+            max-width: 1200px;
+            margin: 80px auto 20px;
+            padding: 20px;
+        }
+
+        .photos-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .photos-title {
+            color: var(--primary-color);
+        }
+
+        .photos-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .photo-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .photo-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .photo-info {
+            padding: 15px;
+        }
+
+        .photo-title {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .photo-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .photo-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .photo-action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .photo-action-btn.edit {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .photo-action-btn.delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .photo-action-btn:hover {
+            opacity: 0.9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .photos-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .photos-filters {
+                flex-wrap: wrap;
+            }
+
+            .photo-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="nav-container">
+        <div class="nav-content">
+            <a href="index.html" class="nav-logo">
+                <img src="images/logo.svg" alt="家庭相册" onerror="this.src='images/logo.png'">
+                家庭相册
+            </a>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="photos.html" class="nav-link">相册</a>
+                <a href="members.html" class="nav-link">成员</a>
+                <a href="calendar.html" class="nav-link">日历</a>
+                <a href="upload.html" class="nav-link">上传</a>
+                <a href="login.html" class="nav-link" id="loginLink">登录</a>
+                <a href="#" class="nav-link" id="logoutLink" style="display: none;">退出</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="photos-container">
+        <div class="photos-header">
+            <h1 class="photos-title">我的相册</h1>
+            <a href="upload.html" class="btn btn-primary">
+                <i class="fas fa-plus"></i> 上传照片
+            </a>
+        </div>
+
+        <div class="photos-filters">
+            <button class="filter-btn active" data-filter="all">全部</button>
+            <button class="filter-btn" data-filter="家庭聚会">家庭聚会</button>
+            <button class="filter-btn" data-filter="旅行">旅行</button>
+            <button class="filter-btn" data-filter="节日">节日</button>
+            <button class="filter-btn" data-filter="日常生活">日常生活</button>
+        </div>
+
+        <div id="loginRequired" style="display: none; text-align: center; padding: 30px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+            <h2>请先登录</h2>
+            <p>您需要登录后才能查看相册</p>
+            <a href="login.html" class="btn btn-primary" style="margin-top: 20px;">去登录</a>
+        </div>
+
+        <div class="photo-grid" id="photoGrid">
+            <!-- 照片将通过 JavaScript 动态加载 -->
+        </div>
+
+        <div id="noPhotos" style="display: none; text-align: center; padding: 50px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+            <i class="fas fa-images" style="font-size: 3rem; color: var(--border-color); margin-bottom: 20px;"></i>
+            <h2>暂无照片</h2>
+            <p>上传一些照片来记录美好时刻吧</p>
+            <a href="upload.html" class="btn btn-primary" style="margin-top: 20px;">上传照片</a>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/nav.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const photoGrid = document.getElementById('photoGrid');
+            const noPhotos = document.getElementById('noPhotos');
+            const loginRequired = document.getElementById('loginRequired');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            
+            let currentFilter = 'all';
+            let photos = [];
+            
+            // 检查登录状态
+            const isLoggedIn = AuthManager.isLoggedIn();
+            if (isLoggedIn) {
+                loginRequired.style.display = 'none';
+                photoGrid.style.display = 'grid';
+                loadPhotos();
+            } else {
+                loginRequired.style.display = 'block';
+                photoGrid.style.display = 'none';
+                noPhotos.style.display = 'none';
+            }
+            
+            // 添加筛选事件
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // 更新活动按钮
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // 更新筛选
+                    currentFilter = button.dataset.filter;
+                    filterPhotos();
+                });
+            });
+            
+            // 加载照片
+            function loadPhotos() {
+                try {
+                    photos = DataStore.getContents();
+                    filterPhotos();
+                } catch (error) {
+                    console.error('加载照片失败:', error);
+                    showError('加载照片失败，请刷新页面重试');
+                }
+            }
+            
+            // 筛选照片
+            function filterPhotos() {
+                let filteredPhotos = photos;
+                
+                if (currentFilter !== 'all') {
+                    filteredPhotos = photos.filter(photo => photo.category === currentFilter);
+                }
+                
+                if (filteredPhotos.length === 0) {
+                    photoGrid.style.display = 'none';
+                    noPhotos.style.display = 'block';
+                } else {
+                    photoGrid.style.display = 'grid';
+                    noPhotos.style.display = 'none';
+                    renderPhotos(filteredPhotos);
+                }
+            }
+            
+            // 渲染照片
+            function renderPhotos(photosToRender) {
+                photoGrid.innerHTML = photosToRender.map(photo => `
+                    <div class="photo-card">
+                        <img src="${photo.images[0]}" alt="${photo.title}" class="photo-image">
+                        <div class="photo-info">
+                            <h3 class="photo-title">${photo.title}</h3>
+                            <div class="photo-meta">
+                                <span>${photo.date}</span>
+                                <span>${photo.category || '未分类'}</span>
+                            </div>
+                            <div class="photo-actions">
+                                <button class="photo-action-btn" onclick="viewPhoto('${photo.id}')">
+                                    <i class="fas fa-eye"></i> 查看
+                                </button>
+                                ${isLoggedIn && photo.userId === AuthManager.getCurrentUser()?.id ? `
+                                <button class="photo-action-btn" onclick="deletePhoto('${photo.id}')">
+                                    <i class="fas fa-trash"></i> 删除
+                                </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // 显示错误信息
+            function showError(message) {
+                alert(message);
+            }
+            
+            // 查看照片详情
+            window.viewPhoto = function(id) {
+                const photo = photos.find(p => p.id === id);
+                if (photo) {
+                    // 这里可以实现查看照片详情的功能
+                    alert(`查看照片: ${photo.title}`);
+                }
+            };
+            
+            // 删除照片
+            window.deletePhoto = async function(id) {
+                if (confirm('确定要删除这张照片吗？')) {
+                    try {
+                        const success = await DataStore.deleteContent(id);
+                        if (success) {
+                            // 重新加载照片
+                            loadPhotos();
+                        } else {
+                            showError('删除照片失败');
+                        }
+                    } catch (error) {
+                        console.error('删除照片失败:', error);
+                        showError('删除照片失败，请重试');
+                    }
+                }
+            };
+        });
+    </script>
+</body>
+</html> 
